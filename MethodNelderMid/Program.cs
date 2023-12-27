@@ -7,9 +7,12 @@ class Program
         // Начальная точка
         double x = 1;
         double y = 2;
+        double[] initialPoint = new double[] { x, y };
+
+        double penaltyParam = 100;
 
         // Вызываем метод Нелдера-Мида
-        var result = NelderMeadMinimize(F, new[] { x, y });
+        var result = NelderMeadMinimize((point) => PenaltyFunction(point, penaltyParam), initialPoint);
 
         // Выводим результат
         Console.WriteLine($"Минимум функции: ({result.MinimizedPoint[0]}, {result.MinimizedPoint[1]})");
@@ -23,6 +26,18 @@ class Program
         double x = point[0];
         double y = point[1];
         return Math.Sqrt(x * x + y * y + 1) + x / 2 - y / 2;
+    }
+
+    static double Plane(double[] point)
+    {
+        double x = point[0];
+        double y = point[1];
+        return x - y + F(point) - 1;
+    }
+
+    static double PenaltyFunction(double[] point, double penaltyParam)
+    {
+        return F(point) + penaltyParam * Math.Pow(Plane(point), 2);
     }
 
     // Метод Нелдера-Мида для поиска минимума функции
@@ -55,7 +70,7 @@ class Program
             }
 
             // Сортировка точек симплекса по значениям функции
-            Array.Sort(values, simplex);
+            Array.Sort(values, simplex, Comparer<double>.Create((a, b) => func(simplex[Array.IndexOf(values, a)]).CompareTo(func(simplex[Array.IndexOf(values, b)]))));
 
             // Проверка условия сходимости
             double maxDiff = 0;
@@ -139,7 +154,6 @@ class Program
                     iterations++;
                 }
             }
-
         }
 
         // Возвращаем результат
